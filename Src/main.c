@@ -120,28 +120,29 @@ int main(void)
   HAL_PWREx_EnableVddIO2();
 
 //  /* Initialize LED */
-  BSP_LED_Init(LED1);
-  BSP_LED_Off(LED1);
+//  BSP_LED_Init(LED1);
+//  BSP_LED_Off(LED1);
   
   DATALOG_SD_Init();
   
   /* Thread 1 definition */
   osThreadDef(THREAD_1, GetData_Thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE*4);
-  
+
   /* Thread 2 definition */
   osThreadDef(THREAD_2, WriteData_Thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE*4);
-  
+
   /* Start thread 1 */
   GetDataThreadId = osThreadCreate(osThread(THREAD_1), NULL);
 
   /* Start thread 2 */
   WriteDataThreadId = osThreadCreate(osThread(THREAD_2), NULL);
-  
+
   /* Start scheduler */
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
-  for (;;);
+  for(;;){
+  }
 
 }
 
@@ -167,7 +168,6 @@ static void GetData_Thread(void const *argument)
   /* COnfigure LSM6DSM Double Tap interrupt*/  
   LSM6DSM_Sensor_IO_ITConfig();
 
-  uint8_t led_counter=0;
   for (;;)
   {
     osSemaphoreWait(readDataSem_id, osWaitForever);
@@ -199,16 +199,6 @@ static void GetData_Thread(void const *argument)
         Error_Handler();
       }
     }
-
-    led_counter++;
-//    if(led_counter>=50&&led_counter<=100)
-//		BSP_LED_On(LED1);
-//	else{
-//		BSP_LED_Off(LED1);
-//	}
-//	if(led_counter==100)
-//		led_counter=0;
-//    BSP_LED_On(LED1);
   }
 }
 
@@ -244,6 +234,8 @@ static void WriteData_Thread(void const *argument)
 	  }
 	}
 
+  uint32_t saveTime=0;
+  uint8_t saveFlag=0;
   for (;;)
   {
     evt = osMessageGet(dataQueue_id, osWaitForever);  // wait for message
@@ -256,11 +248,14 @@ static void WriteData_Thread(void const *argument)
         				     (int)rptr->acc.x, (int)rptr->acc.y, (int)rptr->acc.z,
         				     (int)rptr->gyro.x, (int)rptr->gyro.y, (int)rptr->gyro.z,
         				     (int)rptr->mag.x, (int)rptr->mag.y, (int)rptr->mag.z);
-//        BSP_LED_Off(LED1);
 	    osPoolFree(sensorPool_id, rptr);      // free memory allocated for message
-//	    BSP_LED_Off(LED1);
-	    DATALOG_SD_writeBuf(data_s, size);
-//	    BSP_LED_Off(LED1);
+	    //more than 1s since last save file
+	    if(rptr->ms_counter-saveTime>1000){
+	    	saveFlag=1;
+	    	saveTime=rptr->ms_counter;
+	    }
+	    DATALOG_SD_writeBuf(data_s, size, saveFlag);
+	    saveFlag=0;
     }
   }
 }

@@ -90,7 +90,7 @@ void DATALOG_SD_Init(void)
         BSP_LED_On(LED1);
         HAL_Delay(500);
         BSP_LED_Off(LED1);
-        HAL_Delay(10000);
+        HAL_Delay(100);
       }
     }
   }
@@ -126,9 +126,9 @@ uint8_t DATALOG_SD_Log_Enable(void)
   f_close(&countFile);
 
 
-  sprintf(file_name, "%s%¡£3d%s", "SensorTile_Log_N", sdcard_file_counter, ".csv");
+  sprintf(file_name, "%s%d%s", "SensorTile_Log_N", sdcard_file_counter, ".csv");
 
-  HAL_Delay(100);
+  HAL_Delay(500);
 
   if(f_open(&MyFile, (char const*)file_name, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
   {
@@ -139,19 +139,20 @@ uint8_t DATALOG_SD_Log_Enable(void)
   {
     return 0;
   }
-  f_close(&MyFile);
+//  f_close(&MyFile);
   return 1;
 }
 
-//open/close the file every time
-uint8_t DATALOG_SD_writeBuf(char *s, uint32_t size)
+//open/close the file when flag is 1
+uint8_t DATALOG_SD_writeBuf(char *s, uint32_t size, uint8_t saveFlag)
 {
   uint32_t byteswritten;
-  if(f_open(&MyFile, (char const*)file_name, FA_OPEN_APPEND | FA_WRITE) == FR_OK){
-	  f_write(&MyFile, s, size, (void *)&byteswritten);
+  if(saveFlag){
 	  f_close(&MyFile);
+	  f_open(&MyFile, (char const*)file_name, FA_OPEN_APPEND | FA_WRITE);
   }
-  return 1;
+  f_write(&MyFile, s, size, (void *)&byteswritten);
+  return 0;
 }
 
 

@@ -92,7 +92,7 @@ void floatToInt( float in, int32_t *out_int, int32_t *out_dec, int32_t dec_prec 
 
 void DATALOG_SD_Init(void);
 uint8_t DATALOG_SD_Log_Enable(void);
-uint8_t DATALOG_SD_writeBuf(char *s, uint32_t size);
+uint8_t DATALOG_SD_writeBuf(char *s, uint32_t size, uint8_t saveFlag);
 void DATALOG_SD_Log_Disable(void);
 void DATALOG_SD_DeInit(void);
 void DATALOG_SD_NewLine(void);
