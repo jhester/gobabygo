@@ -46,7 +46,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "lsm303agr.h"
 
-#define LSM303AGR_MAG_ODR 50.0f /* ODR = 50Hz */
+#define LSM303AGR_MAG_ODR 10.0f /* ODR = 10Hz */
 
 #define LSM303AGR_MAG_FS 50 /* FS = 50gauss */
 

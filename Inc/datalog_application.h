@@ -42,10 +42,20 @@ extern "C" {
 #include "SensorTile_motion_sensors.h"
 #include "SensorTile_motion_sensors_ex.h"
   
-#define SAMPLING_50Hz 
+#define SAMPLING_10Hz
+//#define SAMPLING_50Hz
 //#define SAMPLING_100Hz 
 
-#if defined( SAMPLING_50Hz)
+#if defined( SAMPLING_10Hz)
+  #define DEFAULT_uhCCR1_Val 190
+  #define ACCELERO_ODR 83.3f     /* after filtering will be 46.2 Hz */
+  #define ACCELERO_DIV LSM6DSM_ACC_GYRO_HPCF_XL_DIV9
+  #define GYRO_ODR 10.4f
+  #define MAGNETO_ODR 10.0f
+  #define PRESSURE_ODR 10.0f
+  #define DATA_PERIOD_MS     (100)
+
+#elif defined( SAMPLING_50Hz)
   #define DEFAULT_uhCCR1_Val 190
   #define ACCELERO_ODR 416.0f     /* after filtering will be 46.2 Hz */
   #define ACCELERO_DIV LSM6DSM_ACC_GYRO_HPCF_XL_DIV9
@@ -92,7 +102,7 @@ void floatToInt( float in, int32_t *out_int, int32_t *out_dec, int32_t dec_prec 
 
 void DATALOG_SD_Init(void);
 uint8_t DATALOG_SD_Log_Enable(void);
-uint8_t DATALOG_SD_writeBuf(char *s, uint32_t size, uint8_t saveFlag);
+uint8_t DATALOG_SD_writeBuf(char *s, uint32_t size);
 void DATALOG_SD_Log_Disable(void);
 void DATALOG_SD_DeInit(void);
 void DATALOG_SD_NewLine(void);

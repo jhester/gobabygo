@@ -109,6 +109,7 @@ static int32_t LSM6DSM_Sensor_IO_ITConfig( void );
   * @retval None
   */
 int main(void)
+
 {
   HAL_Init();
 
@@ -119,12 +120,13 @@ int main(void)
   HAL_PWREx_EnableVddUSB();
   HAL_PWREx_EnableVddIO2();
 
-//  /* Initialize LED */
+  /* Initialize LED */
 //  BSP_LED_Init(LED1);
 //  BSP_LED_Off(LED1);
-  
+
+  //SDcard mount
   DATALOG_SD_Init();
-  
+
   /* Thread 1 definition */
   osThreadDef(THREAD_1, GetData_Thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE*4);
 
@@ -156,27 +158,22 @@ static void GetData_Thread(void const *argument)
   (void) argument;
   T_SensorsData *mptr;
   
-  sensorPool_id = osPoolCreate(osPool(sensorPool));     
+  sensorPool_id = osPoolCreate(osPool(sensorPool));
   dataQueue_id = osMessageCreate(osMessageQ(dataqueue), NULL);
-  
+
   readDataSem_id = osSemaphoreCreate(osSemaphore(readDataSem), 1);
   osSemaphoreWait(readDataSem_id, osWaitForever);
-  
+
   /* Initialize and Enable the available sensors */
   MX_X_CUBE_MEMS1_Init();
-  
-  /* COnfigure LSM6DSM Double Tap interrupt*/  
-  LSM6DSM_Sensor_IO_ITConfig();
+
+  /* COnfigure LSM6DSM Double Tap interrupt*/
+//  LSM6DSM_Sensor_IO_ITConfig();
 
   for (;;)
   {
     osSemaphoreWait(readDataSem_id, osWaitForever);
-    if(MEMSInterrupt && LoggingInterface == SDCARD_Datalog)
-    {
-      MEMSInterrupt = 0;
-    }
-    else
-    {
+
       /* Try to allocate a memory block and check if is not NULL */
       mptr = osPoolAlloc(sensorPool_id);
       if(mptr != NULL)
@@ -198,7 +195,7 @@ static void GetData_Thread(void const *argument)
       {
         Error_Handler();
       }
-    }
+
   }
 }
 
@@ -213,8 +210,8 @@ static void WriteData_Thread(void const *argument)
   (void) argument;
   osEvent evt;
   T_SensorsData *rptr;
-  int size;
-  char data_s[256];
+  int size=0;
+  char data_s[1400];//100 char each line * 100 line
   
   //initialize once
   while(SD_Log_Enabled != 1)
@@ -234,8 +231,7 @@ static void WriteData_Thread(void const *argument)
 	  }
 	}
 
-  uint32_t saveTime=0;
-  uint8_t saveFlag=0;
+  uint8_t messageCount=0;
   for (;;)
   {
     evt = osMessageGet(dataQueue_id, osWaitForever);  // wait for message
@@ -243,19 +239,20 @@ static void WriteData_Thread(void const *argument)
     {
         rptr = evt.value.p;
 
-        size = sprintf(data_s, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
+        size += sprintf(data_s+size, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
         		  		     rptr->ms_counter,
         				     (int)rptr->acc.x, (int)rptr->acc.y, (int)rptr->acc.z,
         				     (int)rptr->gyro.x, (int)rptr->gyro.y, (int)rptr->gyro.z,
         				     (int)rptr->mag.x, (int)rptr->mag.y, (int)rptr->mag.z);
 	    osPoolFree(sensorPool_id, rptr);      // free memory allocated for message
-	    //more than 1s since last save file
-	    if(rptr->ms_counter-saveTime>1000){
-	    	saveFlag=1;
-	    	saveTime=rptr->ms_counter;
+	    messageCount+=1;
+
+	    if(messageCount==14){
+	    	DATALOG_SD_writeBuf(data_s, size);
+	    	messageCount=0;
+	    	size=0;
 	    }
-	    DATALOG_SD_writeBuf(data_s, size, saveFlag);
-	    saveFlag=0;
+
     }
   }
 }
