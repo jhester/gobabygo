@@ -109,7 +109,6 @@ static int32_t LSM6DSM_Sensor_IO_ITConfig( void );
   * @retval None
   */
 int main(void)
-
 {
   HAL_Init();
 
@@ -126,6 +125,11 @@ int main(void)
 
   //SDcard mount
   DATALOG_SD_Init();
+
+
+  //Enter sleep mode
+//  __asm volatile( "wfi" );
+//  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
   /* Thread 1 definition */
   osThreadDef(THREAD_1, GetData_Thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE*4);
@@ -211,7 +215,7 @@ static void WriteData_Thread(void const *argument)
   osEvent evt;
   T_SensorsData *rptr;
   int size=0;
-  char data_s[1400];//100 char each line * 100 line
+  char data_s[1000];//100 char each line * 10 line
   
   //initialize once
   while(SD_Log_Enabled != 1)
@@ -247,7 +251,7 @@ static void WriteData_Thread(void const *argument)
 	    osPoolFree(sensorPool_id, rptr);      // free memory allocated for message
 	    messageCount+=1;
 
-	    if(messageCount==14){
+	    if(messageCount==10){
 	    	DATALOG_SD_writeBuf(data_s, size);
 	    	messageCount=0;
 	    	size=0;

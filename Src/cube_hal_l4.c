@@ -64,20 +64,20 @@ void SystemClock_Config(void)
   
   /* Enable the CSS interrupt in case LSE signal is corrupted or not present */
   HAL_RCCEx_DisableLSECSS();
-  
+
   /* Enable MSI Oscillator and activate PLL with MSI as source */
   RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.MSIState            = RCC_MSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.MSIClockRange       = RCC_MSIRANGE_11;
+  RCC_OscInitStruct.MSIClockRange       = RCC_MSIRANGE_11; //Range_11 : 48Mhz
   RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_MSI;
   RCC_OscInitStruct.PLL.PLLM            = 6;
   RCC_OscInitStruct.PLL.PLLN            = 40;
   RCC_OscInitStruct.PLL.PLLP            = 7;
   RCC_OscInitStruct.PLL.PLLQ            = 4;
-  RCC_OscInitStruct.PLL.PLLR            = 4;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  RCC_OscInitStruct.PLL.PLLR            = 8; //was 4
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)//increase from 6mA to 14mA
   {
     Error_Handler();
   }
@@ -88,7 +88,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  
+
   /* Enable MSI Auto-calibration through LSE */
   HAL_RCCEx_EnableMSIPLLMode();
 
@@ -97,7 +97,7 @@ void SystemClock_Config(void)
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_MSI;
   HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
 
-  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
   clocks dividers */
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;

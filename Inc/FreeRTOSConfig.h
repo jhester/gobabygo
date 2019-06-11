@@ -105,6 +105,7 @@
 #define configUSE_APPLICATION_TASK_TAG          0
 #define configUSE_COUNTING_SEMAPHORES           1
 #define configGENERATE_RUN_TIME_STATS           0
+#define configUSE_TICKLESS_IDLE					1
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                   0
