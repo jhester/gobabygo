@@ -244,7 +244,7 @@ static void WriteData_Thread(void const *argument)
         rptr = evt.value.p;
 
         size += sprintf(data_s+size, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
-        		  		     rptr->ms_counter,
+        		  		     (uint32_t) xTaskGetTickCount(),
         				     (int)rptr->acc.x, (int)rptr->acc.y, (int)rptr->acc.z,
         				     (int)rptr->gyro.x, (int)rptr->gyro.y, (int)rptr->gyro.z,
         				     (int)rptr->mag.x, (int)rptr->mag.y, (int)rptr->mag.z);
