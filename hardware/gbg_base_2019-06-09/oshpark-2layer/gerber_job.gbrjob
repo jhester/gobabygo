@@ -1,0 +1,11 @@
+G04 Gerber job file.*
+%TF.FileFunction,JobInfo*%
+%TF.GenerationSoftware,Autodesk,EAGLE,9.1.3*%
+%TF.CreationDate,2019-06-09T19:50:33Z*%
+%TF.Part,Single*%
+%MOIN*%
+%TJ.B_Owner,Josiah Hester <josiah@northwestern.edu>*%
+%TJ.B_ID,gbg_base*%
+%TJ.B_LayerNum,2*%
+%TJ.B_Thickness,0.065792*%
+M02*
