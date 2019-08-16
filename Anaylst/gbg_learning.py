@@ -6,6 +6,7 @@ Created on Mon Aug 12 20:24:35 2019
 """
 import os
 import numpy as np
+from math import atan2,pi, degrees,radians
 import pandas as pd
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
@@ -59,39 +60,66 @@ def scatter(df):
     ax.set_ylabel('Y-axis')
     ax.set_zlabel('Z-axis')
     plt.show()
+    
+#normalize v that |v|=1
+def normalize(v):
+    m=np.sqrt(np.sum(v**2))
+    v=v/m
+    return v
+    
 
 
 standard_g=9.80665 #1g=9.80665 m/s2
 delta_t=0.1 #second
 cos45=1/np.sqrt(2)
-static_threshold=100
+acc_threshold=100
+R=np.array([-cos45, 0, cos45])
+direction=[0]
+
 prev_v=np.zeros(2)
 prev_a=np.zeros(2)
 prev_pos=np.zeros(2)
 positions=[]
 distance=[0]
 
-for index, row in df.head(2000).tail(1000).iterrows():
+for index, row in df.head(1000).iterrows():
     #detect static, if values are the same in 10 frames(1 sec), update zero_error with avg values
-    accel=np.array([row['AccX [mg]'],row['AccY [mg]'],row['AccZ [mg]']])#unit:g
+    accel=np.array([row['AccX [mg]'],row['AccY [mg]'],row['AccZ [mg]']])#unit:mg
+    gyro=np.array([row['GyroX [mdps]'],row['GyroY [mdps]'],row['GyroZ [mdps]']])#unit:mdps
     static=True
-    avg=np.array([row['AccX [mg]'],row['AccY [mg]'],row['AccZ [mg]']])
+    acc_avg=np.array([row['AccX [mg]'],row['AccY [mg]'],row['AccZ [mg]']])
+    gyro_avg=np.array([row['GyroX [mdps]'],row['GyroY [mdps]'],row['GyroZ [mdps]']])
     for i in range(index+1, index+10):
         tmp=np.array([df.iloc[i]['AccX [mg]'],df.iloc[i]['AccY [mg]'],df.iloc[i]['AccZ [mg]']])
         diff=np.sum((tmp-accel)**2)
-        avg+=tmp
-        if diff>static_threshold:
+        acc_avg+=tmp
+        gyro_avg+=np.array([df.iloc[i]['GyroX [mdps]'],df.iloc[i]['GyroY [mdps]'],df.iloc[i]['GyroZ [mdps]']])
+        if diff>acc_threshold:
             static=False
             break;
     if static is True:
-        zero_error=avg/10-np.array([-707,0,707])
-        print('static',zero_error)
-    accel=accel.astype(float)-zero_error
-    accel=accel/1000.0
+        acc_zero_error=acc_avg/10
+        gyro_zero_error=gyro_avg/10
+        #print('acc zero error',acc_zero_error)
+        #print('gyro zero error',gyro_zero_error)
+        
+    #adjust acc and gyro values
+    Racc=(accel.astype(float)-acc_zero_error)/1000.0#unit:g
+    Racc=normalize(Racc)
+    gyro=(gyro.astype(float)-gyro_zero_error)/1000.0#unit:dps
+    angle_speed=np.sqrt(gyro[0]**2+gyro[2]**2)*np.sign(gyro[0])
+    direction.append((direction[-1]+angle_speed*delta_t)%360)
+    
     #F+G=[x,y,z]=[x'cos45+z'cos45, y, -x'cos45+z'cos45]
     a=np.array([accel[0]*cos45+accel[2]*cos45, accel[1]]) *standard_g
     #numeriacal integration
     v= prev_v + (a+prev_a)/2*delta_t
+    #x'=x*cos(theta)+y*cos(theto)
+    #y'=-x*sin(theta)+y*cos(theta)
+    new_x = v[0] * np.cos(np.deg2rad(direction[-1])) + v[1] * np.sin(np.deg2rad(direction[-1]))
+    new_y = -1*v[0] * np.sin(np.deg2rad(direction[-1])) + v[1] * np.cos(np.deg2rad(direction[-1]))
+    v[0]=new_x
+    v[1]=new_y
     pos=prev_pos + (v+prev_v)/2*delta_t
     
     distance.append(distance[-1]+np.sqrt(np.sum((pos-prev_pos)**2)))
@@ -107,10 +135,10 @@ plt.ylabel("Y")
 plt.title("track")
 plt.show()
 
-#plt.plot(np.arange(0,100.1,0.1), distance)
-#plt.title("Distance")
-#plt.xlabel("time [s]")
-#plt.ylabel("distance [m]")
+plt.plot(np.arange(0,100.1,0.1), direction)
+plt.title("Turns")
+plt.xlabel("time [s]")
+plt.ylabel("Angle [degree]")
 
 
     
