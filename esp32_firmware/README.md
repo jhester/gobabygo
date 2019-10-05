@@ -27,6 +27,7 @@ Thie allows us to get GPS coordinates, very accurate global time, and IMU data f
 2. If this file does not exist, OR the network is unavailable. Then go into BLE mode and listen for a connection. Also go about normal data collection.
 3. If a connection is made in BLE mode, talk over UART and ask for Wifi SSID and password. Then connect and store it once found.
 
+**Even easier. Have the participants or study coordinator make a file on the SD card with the SSID and password for the network and then the ESP32 will just connect to it.**
 
 ![esp 32 imag](https://cdn.sparkfun.com//assets/parts/1/1/5/6/4/13907-01.jpg)
 
