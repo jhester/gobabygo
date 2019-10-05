@@ -20,6 +20,14 @@ Thie allows us to get GPS coordinates, very accurate global time, and IMU data f
 1. [NMEA reference for GPS data](https://www.sparkfun.com/datasheets/GPS/NMEA%20Reference%20Manual-Rev2.1-Dec07.pdf)
 2. [Motion breakout guide.](https://learn.sparkfun.com/tutorials/esp32-thing-motion-shield-hookup-guide)
 
+#### TODO and Ideas
+
+**Data Upload:** Use the BLE and Wifi together to create an in-wild auto data upload mechanism. The process would be:
+1. Read network.txt SD card for Wifi info and attempt to authenticate with it if it exists.
+2. If this file does not exist, OR the network is unavailable. Then go into BLE mode and listen for a connection. Also go about normal data collection.
+3. If a connection is made in BLE mode, talk over UART and ask for Wifi SSID and password. Then connect and store it once found.
+
+
 ![esp 32 imag](https://cdn.sparkfun.com//assets/parts/1/1/5/6/4/13907-01.jpg)
 
 ---------
